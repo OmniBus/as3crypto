@@ -19,8 +19,10 @@ package com.hurlant.crypto.hash
 
 	public class SHA1 extends SHABase implements IHash
 	{
+		public static const HASH_SIZE:int = 20;
+		
 		public override function getHashSize():uint {
-			return 20;
+			return HASH_SIZE;
 		}
 		
 		protected override function core(x:Array, len:uint):Array

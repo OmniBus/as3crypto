@@ -15,6 +15,7 @@ package com.hurlant.crypto.symmetric
 {
 	import flash.utils.ByteArray;
 	import com.hurlant.util.Memory;
+	import com.hurlant.util.Hex;
 
 	public class TripleDESKey extends DESKey
 	{
@@ -75,9 +76,9 @@ package com.hurlant.crypto.symmetric
 		
 		public override function decrypt(block:ByteArray, index:uint=0):void
 		{
-			desFunc(decKey, block, index, block, index);
-			desFunc(decKey2, block, index, block, index);
 			desFunc(decKey3, block, index, block, index);
+			desFunc(decKey2, block, index, block, index);
+			desFunc(decKey, block, index, block, index);
 		}
 		
 		public override function toString():String {

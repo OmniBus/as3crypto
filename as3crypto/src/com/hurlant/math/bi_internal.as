@@ -6,6 +6,6 @@
  * 
  * See LICENSE.txt for full license information.
  */
-package com.hurlant.crypto.rsa {
+package com.hurlant.math {
 	public namespace bi_internal = "http://crypto.hurlant.com/BigInteger";
 }

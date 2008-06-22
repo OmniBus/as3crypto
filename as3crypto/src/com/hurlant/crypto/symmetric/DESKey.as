@@ -256,7 +256,6 @@ package com.hurlant.crypto.symmetric
 				newKey[i + 1] = ((i1 & 0x0003f000) << 12) | ((i1 & 0x0000003f) << 16) | ((i2 & 0x0003f000) >>> 4)
 						| (i2 & 0x0000003f);
 			}
-	
 			return newKey;
 		}
 	

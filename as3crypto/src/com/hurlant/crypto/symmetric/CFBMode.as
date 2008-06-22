@@ -13,43 +13,47 @@ package com.hurlant.crypto.symmetric
 	/**
 	 * This is the "full" CFB.
 	 * CFB1 and CFB8 are hiding somewhere else.
+	 * 
+	 * Note: The constructor accepts an optional padding argument, but ignores it otherwise.
 	 */
 	public class CFBMode extends IVMode implements IMode
 	{
 		
 		public function CFBMode(key:ISymmetricKey, padding:IPad = null) {
-			super(key,padding);
+			super(key,null);
 		}
 
 		public function encrypt(src:ByteArray):void
 		{
-			padding.pad(src);
+			var l:uint = src.length;
 			var vector:ByteArray = getIV4e();
 			for (var i:uint=0;i<src.length;i+=blockSize) {
 				key.encrypt(vector);
-				for (var j:uint=0;j<blockSize;j++) {
+				var chunk:uint = (i+blockSize<l)?blockSize:l-i;
+				for (var j:uint=0;j<chunk;j++) {
 					src[i+j] ^= vector[j];
 				}
 				vector.position=0;
-				vector.writeBytes(src, i, blockSize);
+				vector.writeBytes(src, i, chunk);
 			}
 		}
 		
 		public function decrypt(src:ByteArray):void
 		{
+			var l:uint = src.length;
 			var vector:ByteArray = getIV4d();
 			var tmp:ByteArray = new ByteArray;
 			for (var i:uint=0;i<src.length;i+=blockSize) {
 				key.encrypt(vector);
+				var chunk:uint = (i+blockSize<l)?blockSize:l-i;
 				tmp.position=0;
-				tmp.writeBytes(src, i, blockSize);
-				for (var j:uint=0;j<blockSize;j++) {
+				tmp.writeBytes(src, i, chunk);
+				for (var j:uint=0;j<chunk;j++) {
 					src[i+j] ^= vector[j];
 				}
 				vector.position=0;
 				vector.writeBytes(tmp);
 			}
-			padding.unpad(src);
 		}
 		
 		public function toString():String {

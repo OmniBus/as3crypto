@@ -11,14 +11,17 @@ package com.hurlant.crypto.symmetric
 	import com.hurlant.crypto.tests.TestCase;
 	import flash.utils.ByteArray;
 
+	/**
+	 * 
+	 * Note: The constructor accepts an optional padding argument, but ignores it otherwise.
+	 */
 	public class CFB8Mode extends IVMode implements IMode
 	{
 		public function CFB8Mode(key:ISymmetricKey, padding:IPad = null) {
-			super(key, padding);
+			super(key, null);
 		}
 		
 		public function encrypt(src:ByteArray):void {
-			padding.pad(src);
 			var vector:ByteArray = getIV4e();
 			var tmp:ByteArray = new ByteArray;
 			for (var i:uint=0;i<src.length;i++) {
@@ -49,7 +52,7 @@ package com.hurlant.crypto.symmetric
 				}
 				vector[blockSize-1] = c;
 			}
-			padding.unpad(src);
+
 		}
 		public function toString():String {
 			return key.toString()+"-cfb8";

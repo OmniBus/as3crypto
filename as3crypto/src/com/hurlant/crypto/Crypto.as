@@ -10,11 +10,13 @@ package com.hurlant.crypto
 {
 	import com.hurlant.crypto.hash.HMAC;
 	import com.hurlant.crypto.hash.IHash;
+	import com.hurlant.crypto.hash.MD2;
 	import com.hurlant.crypto.hash.MD5;
 	import com.hurlant.crypto.hash.SHA1;
 	import com.hurlant.crypto.hash.SHA224;
 	import com.hurlant.crypto.hash.SHA256;
 	import com.hurlant.crypto.prng.ARC4;
+	import com.hurlant.crypto.rsa.RSAKey;
 	import com.hurlant.crypto.symmetric.AESKey;
 	import com.hurlant.crypto.symmetric.BlowFishKey;
 	import com.hurlant.crypto.symmetric.CBCMode;
@@ -34,10 +36,9 @@ package com.hurlant.crypto
 	import com.hurlant.crypto.symmetric.SimpleIVMode;
 	import com.hurlant.crypto.symmetric.TripleDESKey;
 	import com.hurlant.crypto.symmetric.XTeaKey;
+	import com.hurlant.util.Base64;
 	
 	import flash.utils.ByteArray;
-	import com.hurlant.crypto.rsa.RSAKey;
-	import com.hurlant.util.Base64;
 	
 	/**
 	 * A class to make it easy to use the rest of the framework.
@@ -102,7 +103,7 @@ package com.hurlant.crypto
 				case "aes192":
 				case "aes256":
 					keys.shift();
-					if (key.length==keys[0]) {
+					if (key.length*8==keys[0]) {
 						// support for "aes-128-..." and such.
 						keys.shift();
 					}
@@ -121,6 +122,9 @@ package com.hurlant.crypto
 					keys.shift();
 					if (keys[0]!="ede" && keys[0]!="ede3") {
 						return getMode(keys[0], new DESKey(key), pad);
+					}
+					if (keys.length==1) {
+						keys.push("ecb"); // default mode for 2tdes and 3tdes with openssl enc
 					}
 					// fall-through to triple des
 				case "3des":
@@ -141,6 +145,51 @@ package com.hurlant.crypto
 				break;
 			}
 			return null;
+		}
+		
+		/**
+		 * Returns the size of a key for a given cipher identifier.
+		 */
+		public static function getKeySize(name:String):uint {
+			var keys:Array = name.split("-");
+			switch (keys[0]) {
+				case "simple":
+					keys.shift();
+					return getKeySize(keys.join("-"));
+				case "aes128":
+					return 16;
+				case "aes192":
+					return 24;
+				case "aes256":
+					return 32;
+				case "aes":
+					keys.shift();
+					return parseInt(keys[0])/8;
+				case "bf":
+				case "blowfish":
+					return 16;
+				case "des":
+					keys.shift();
+					switch (keys[0]) {
+						case "ede":
+							return 16;
+						case "ede3":
+							return 24;
+						default:
+							return 8;
+					}
+				case "3des":
+				case "des3":
+					return 24;
+				case "xtea":
+					return 8;
+				case "rc4":
+					if (parseInt(keys[1])>0) {
+						return parseInt(keys[1])/8;
+					}
+					return 16; // why not.
+			}
+			return 0; // unknown;
 		}
 		
 		private static function getMode(name:String, alg:ISymmetricKey, padding:IPad=null):IMode {
@@ -171,6 +220,8 @@ package com.hurlant.crypto
 		 */
 		public static function getHash(name:String):IHash {
 			switch(name) {
+				case "md2":
+					return new MD2;
 				case "md5":
 					return new MD5;
 				case "sha": // let's hope you didn't mean sha-0
@@ -216,7 +267,7 @@ package com.hurlant.crypto
 		/** mostly useless.
 		 */
 		public static function getRSA(E:String, M:String):RSAKey {
-			return RSAKey.parseKey(E,M);
+			return RSAKey.parsePublicKey(M,E);
 		}
 	}
 }

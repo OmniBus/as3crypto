@@ -13,6 +13,13 @@ package com.hurlant.crypto.prng
 {
 	import flash.utils.ByteArray;
 	import com.hurlant.util.Memory;
+	import flash.system.System;
+	import flash.system.Capabilities;
+	import flash.accessibility.AccessibilityProperties;
+	import flash.display.SWFVersion;
+	import flash.display.Stage;
+	import flash.utils.getTimer;
+	import flash.text.Font;
 	
 	public class Random
 	{
@@ -21,6 +28,7 @@ package com.hurlant.crypto.prng
 		private var pool:ByteArray;
 		private var psize:int;
 		private var pptr:int;
+		private var seeded:Boolean = false;
 		
 		public function Random(prng:Class = null) {
 			if (prng==null) prng = ARC4;
@@ -46,7 +54,34 @@ package com.hurlant.crypto.prng
 			pool[pptr++] ^= (x>>16)&255;
 			pool[pptr++] ^= (x>>24)&255;
 			pptr %= psize;
+			seeded = true;
 		}
+		
+		/**
+		 * Gather anything we have that isn't entirely predictable:
+		 *  - memory used
+		 *  - system capabilities
+		 *  - timing stuff
+		 *  - installed fonts
+		 */
+		public function autoSeed():void {
+			var b:ByteArray = new ByteArray;
+			b.writeUnsignedInt(System.totalMemory);
+			b.writeUTF(Capabilities.serverString);
+			b.writeUnsignedInt(getTimer());
+			b.writeUnsignedInt((new Date).getTime());
+			var a:Array = Font.enumerateFonts(true);
+			for each (var f:Font in a) {
+				b.writeUTF(f.fontName);
+				b.writeUTF(f.fontStyle);
+				b.writeUTF(f.fontType);
+			}
+			b.position=0;
+			while (b.bytesAvailable>=4) {
+				seed(b.readUnsignedInt());
+			}
+		}
+		
 		
 		public function nextBytes(buffer:ByteArray, length:int):void {
 			while (length--) {
@@ -55,7 +90,9 @@ package com.hurlant.crypto.prng
 		}
 		public function nextByte():int {
 			if (!ready) {
-				seed();
+				if (!seeded) {
+					autoSeed();
+				}
 				state.init(pool);
 				pool.length = 0;
 				pptr = 0;

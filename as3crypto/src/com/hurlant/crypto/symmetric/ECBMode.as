@@ -10,6 +10,7 @@ package com.hurlant.crypto.symmetric
 {
 	import flash.utils.ByteArray;
 	import com.hurlant.util.Memory;
+	import com.hurlant.util.Hex;
 	
 	/**
 	 * ECB mode.
@@ -51,11 +52,18 @@ package com.hurlant.crypto.symmetric
 		public function decrypt(src:ByteArray):void {
 			src.position = 0;
 			var blockSize:uint = key.getBlockSize();
+			
+			// sanity check.
+			if (src.length%blockSize!=0) {
+				throw new Error("ECB mode cipher length must be a multiple of blocksize "+blockSize);
+			}
+			
 			var tmp:ByteArray = new ByteArray;
 			var dst:ByteArray = new ByteArray;
 			for (var i:uint=0;i<src.length;i+=blockSize) {
 				tmp.length=0;
 				src.readBytes(tmp, 0, blockSize);
+				
 				key.decrypt(tmp);
 				dst.writeBytes(tmp);
 			}

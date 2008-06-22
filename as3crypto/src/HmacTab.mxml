@@ -19,6 +19,7 @@
 			<item label="SHA-224" value="sha224"/>
 			<item label="SHA-1" value="sha1"/>
 			<item label="MD5" value="md5"/>
+			<item label="MD2" value="md2"/>
 		</mx:XMLList>
 	</mx:dataProvider>
 	</mx:ComboBox>

@@ -51,7 +51,7 @@ This software is covered under the following copyright:
 Address all questions regarding this license to:
 
  Henri Torgemane
- henri.torgemane@yahoo.com
+ henri_torgemane@yahoo.com
  
 
 Additionally, the MD5 algorithm is covered by the following notice:

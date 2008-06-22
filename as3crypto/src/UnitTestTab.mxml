@@ -20,6 +20,10 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.hurlant.crypto.tests.MD2Test;
+			import com.hurlant.crypto.tests.TLSPRFTest;
+			import com.hurlant.crypto.tests.BigIntegerTest;
+			import com.hurlant.crypto.tests.RSAKeyTest;
 			import com.hurlant.crypto.tests.CTRModeTest;
 			import com.hurlant.crypto.tests.TripleDESKeyTest;
 			import com.hurlant.crypto.tests.DESKeyTest;
@@ -38,11 +42,13 @@
 			import com.hurlant.crypto.tests.XTeaKeyTest;
 			import com.hurlant.crypto.tests.AESKeyTest;
 			
-			private var testList:Array = [ AESKeyTest, XTeaKeyTest, 
+ 			private var testList:Array = [ AESKeyTest, XTeaKeyTest, 
 				ECBModeTest, CBCModeTest, CFBModeTest, CFB8ModeTest,
 				OFBModeTest, CTRModeTest, 
-				SHA1Test, MD5Test, SHA256Test, SHA224Test, HMACTest, 
-				ARC4Test, BlowFishKeyTest, DESKeyTest, TripleDESKeyTest];
+				MD2Test, SHA1Test, MD5Test, SHA256Test, SHA224Test, HMACTest, 
+				ARC4Test, BlowFishKeyTest, DESKeyTest, TripleDESKeyTest,
+				RSAKeyTest, BigIntegerTest,
+				TLSPRFTest];
 			
 			private var testCount:uint;
 			private var testFailed:uint;

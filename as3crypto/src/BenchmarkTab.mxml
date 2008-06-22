@@ -19,6 +19,7 @@
 	<mx:TextArea id="result" left="10" top="209" bottom="10" right="10" editable="false" fontFamily="Courier New" fontSize="12"/>
 	<mx:Script>
 		<![CDATA[
+			import com.hurlant.crypto.hash.MD2;
 			import com.hurlant.util.Memory;
 			import com.hurlant.crypto.symmetric.ICipher;
 			import com.hurlant.crypto.hash.IHash;
@@ -56,6 +57,7 @@
 			 * Each line in this benchmark takes about 23s to test.
 			 */
 			private var benchmarks:Array = [
+ 				{state:new MD2,              op:hash_op, cut:100},
  				{state:new MD5,              op:hash_op},
 				{state:new SHA1,             op:hash_op},
 				{state:new SHA224,           op:hash_op},
@@ -160,6 +162,7 @@
 				var c:Number = benchmarks[currentBenchmark].cut;
 				if (!isNaN(c)) {
 					l/=c;
+					if (l<1) l=1;
 				}
 				var t1:uint = getTimer();
 				for (var i:uint=0;i<l;i++) {

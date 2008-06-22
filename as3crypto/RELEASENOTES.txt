@@ -1,5 +1,16 @@
 As3 Crypto Library
 
+- 1.2
+  - math: Completed BigInteger support. Moved BigInteger under com.hurlant.math
+  - public key: RSA decrypt and key generation
+  - crud: basic DER/PEM support to parse RSA keys (X.509 SubjectPublicKeyInfo and PKCS#1 RSAPrivateKey)
+  - random: support for TLS-PRF; weak attempt at seeding Random.
+  - hash: added MD2. slow legacy stuff.
+  - modes: CFB, CFB8 and OFB padding bug fixes
+  - secret key: TripeDES bug fix
+  - demo UI: added OpenSSL Monkey tab that checks that a few operations are compatible between As3Crypto and OpenSSL
+  - demo UI: added UI for RSA decryption and key generation
+
 - 1.1
   - secret key: DES, 3DES, BlowFish
   - mode: CTR, SimpleIV

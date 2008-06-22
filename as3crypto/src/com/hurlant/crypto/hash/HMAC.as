@@ -61,6 +61,10 @@ package com.hurlant.crypto.hash
 			}
 			return outerHash;
 		}
+		public function dispose():void {
+			hash = null;
+			bits = 0;
+		}
 		public function toString():String {
 			return "hmac-"+(bits>0?bits+"-":"")+hash.toString();
 		}
