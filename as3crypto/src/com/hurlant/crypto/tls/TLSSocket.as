@@ -12,19 +12,18 @@
  * See LICENSE.txt for full license information.
  */
 package com.hurlant.crypto.tls {
-	import flash.events.EventDispatcher;
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
-	import flash.utils.Endian;
-	import flash.net.ObjectEncoding;
-	import flash.utils.ByteArray;
-	import flash.net.Socket;
-	import flash.events.ProgressEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
-	import flash.utils.setTimeout;
+	import flash.net.ObjectEncoding;
+	import flash.net.Socket;
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
 	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	[Event(name="close", type="flash.events.Event")]
 	[Event(name="connect", type="flash.events.Event")]
@@ -33,13 +32,14 @@ package com.hurlant.crypto.tls {
 	[Event(name="socketData", type="flash.events.ProgressEvent")]
 	
 	/**
-	 * It feels like a socket, but it wraps the stream
-	 * over TLS 1.0
+	 * When used as a drop-in replacement for Socket, will automatically use TLS 1.0
+     * Otherwise, can be used with .startTLS to convert an already connected Socket
+	 * to TLS.
 	 * 
 	 * That's all.
 	 * 
 	 */
-	public class TLSSocket extends EventDispatcher implements IDataInput, IDataOutput {
+	public class TLSSocket extends Socket implements IDataInput, IDataOutput {
 		
 		private var _endian:String;
 		private var _objectEncoding:uint;
@@ -51,31 +51,33 @@ package com.hurlant.crypto.tls {
 		private var _socket:Socket;
 		
 		private var _engine:TLSEngine;
+		private var _config:TLSConfig;
 		
 		public function TLSSocket(host:String = null, port:int = 0, config:TLSConfig = null) {
 			if (host!=null && port!=0) {
-				connect(host, port, config);
+				setTLSConfig(config);
+				connect(host, port);
 			}
 		}
 		
-		public function get bytesAvailable():uint {
+		override public function get bytesAvailable():uint {
 			return _iStream.bytesAvailable;
 		}
-		public function get connected():Boolean {
+		override public function get connected():Boolean {
 			return _socket.connected;
 		}
-		public function get endian():String {
+		override public function get endian():String {
 			return _endian;
 		}
-		public function set endian(value:String):void {
+		override public function set endian(value:String):void {
 			_endian = value;
 			_iStream.endian = value;
 			_oStream.endian = value;
 		}
-		public function get objectEncoding():uint {
+		override public function get objectEncoding():uint {
 			return _objectEncoding;
 		}
-		public function set objectEncoding(value:uint):void {
+		override public function set objectEncoding(value:uint):void {
 			_objectEncoding = value;
 			_iStream.objectEncoding = value;
 			_oStream.objectEncoding = value;
@@ -122,15 +124,19 @@ package com.hurlant.crypto.tls {
 		}
 		
 		
-		public function close():void {
+		override public function close():void {
 			_ready = false;
 			_engine.close();
 			_socket.flush();
 			_socket.close();
 		}
 		
-		public function connect(host:String, port:int, config:TLSConfig = null):void {
-			init(new Socket, config, host);
+		public function setTLSConfig(config:TLSConfig):void {
+			_config = config;
+		}
+		
+		override public function connect(host:String, port:int):void {
+			init(new Socket, _config, host);
 			_socket.connect(host, port);
 			_engine.start();
 		}
@@ -168,123 +174,123 @@ package com.hurlant.crypto.tls {
 			_ready = false;
 		}
 		
-		public function flush():void {
+		override public function flush():void {
 			commitWrite();
 			_socket.flush();
 		}
 		
-		public function readBoolean():Boolean {
+		override public function readBoolean():Boolean {
 			return _iStream.readBoolean();
 		}
 		
-		public function readByte():int {
+		override public function readByte():int {
 			return _iStream.readByte();
 		}
 		
-		public function readBytes(bytes:ByteArray, offset:uint = 0, length:uint = 0):void {
+		override public function readBytes(bytes:ByteArray, offset:uint = 0, length:uint = 0):void {
 			return _iStream.readBytes(bytes, offset, length);
 		}
 		
-		public function readDouble():Number {
+		override public function readDouble():Number {
 			return _iStream.readDouble();
 		}
 		
-		public function readFloat():Number {
+		override public function readFloat():Number {
 			return _iStream.readFloat();
 		}
 		
-		public function readInt():int {
+		override public function readInt():int {
 			return _iStream.readInt();
 		}
 		
-		public function readMultiByte(length:uint, charSet:String):String {
+		override public function readMultiByte(length:uint, charSet:String):String {
 			return _iStream.readMultiByte(length, charSet);
 		}
 		
-		public function readObject():* {
+		override public function readObject():* {
 			return _iStream.readObject();
 		}
 		
-		public function readShort():int {
+		override public function readShort():int {
 			return _iStream.readShort();
 		}
 		
-		public function readUnsignedByte():uint {
+		override public function readUnsignedByte():uint {
 			return _iStream.readUnsignedByte();
 		}
 		
-		public function readUnsignedInt():uint {
+		override public function readUnsignedInt():uint {
 			return _iStream.readUnsignedInt();
 		}
 		
-		public function readUnsignedShort():uint {
+		override public function readUnsignedShort():uint {
 			return _iStream.readUnsignedShort();
 		}
 		
-		public function readUTF():String {
+		override public function readUTF():String {
 			return _iStream.readUTF();
 		}
 		
-		public function readUTFBytes(length:uint):String {
+		override public function readUTFBytes(length:uint):String {
 			return _iStream.readUTFBytes(length);
 		}
 		
-		public function writeBoolean(value:Boolean):void {
+		override public function writeBoolean(value:Boolean):void {
 			_oStream.writeBoolean(value);
 			scheduleWrite();
 		}
 		
-		public function writeByte(value:int):void {
+		override public function writeByte(value:int):void {
 			_oStream.writeByte(value);
 			scheduleWrite();
 		}
 		
-		public function writeBytes(bytes:ByteArray, offset:uint = 0, length:uint = 0):void {
+		override public function writeBytes(bytes:ByteArray, offset:uint = 0, length:uint = 0):void {
 			_oStream.writeBytes(bytes, offset, length);
 			scheduleWrite();
 		}
 		
-		public function writeDouble(value:Number):void {
+		override public function writeDouble(value:Number):void {
 			_oStream.writeDouble(value);
 			scheduleWrite();
 		}
 		
-		public function writeFloat(value:Number):void {
+		override public function writeFloat(value:Number):void {
 			_oStream.writeFloat(value);
 			scheduleWrite();
 		}
 		
-		public function writeInt(value:int):void {
+		override public function writeInt(value:int):void {
 			_oStream.writeInt(value);
 			scheduleWrite();
 		}
 		
-		public function writeMultiByte(value:String, charSet:String):void {
+		override public function writeMultiByte(value:String, charSet:String):void {
 			_oStream.writeMultiByte(value, charSet);
 			scheduleWrite();
 		}
 		
-		public function writeObject(object:*):void {
+		override public function writeObject(object:*):void {
 			_oStream.writeObject(object);
 			scheduleWrite();
 		}
 		
-		public function writeShort(value:int):void {
+		override public function writeShort(value:int):void {
 			_oStream.writeShort(value);
 			scheduleWrite();
 		}
 		
-		public function writeUnsignedInt(value:uint):void {
+		override public function writeUnsignedInt(value:uint):void {
 			_oStream.writeUnsignedInt(value);
 			scheduleWrite();
 		}
 		
-		public function writeUTF(value:String):void {
+		override public function writeUTF(value:String):void {
 			_oStream.writeUTF(value);
 			scheduleWrite();
 		}
 		
-		public function writeUTFBytes(value:String):void {
+		override public function writeUTFBytes(value:String):void {
 			_oStream.writeUTFBytes(value);
 			scheduleWrite();
 		}
