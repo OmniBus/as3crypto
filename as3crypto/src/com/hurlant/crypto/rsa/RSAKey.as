@@ -16,6 +16,15 @@ package com.hurlant.crypto.rsa
 	import com.hurlant.util.Memory;
 	
 	import flash.utils.ByteArray;
+	import com.hurlant.crypto.hash.IHash;
+	import com.hurlant.util.Hex;
+	import com.hurlant.util.der.DER;
+	import com.hurlant.util.der.OID;
+	import com.hurlant.util.ArrayUtil;
+	import com.hurlant.util.der.Type;
+	import com.hurlant.util.der.Sequence;
+	import com.hurlant.util.der.ObjectIdentifier;
+	import com.hurlant.util.der.ByteString;
 	
 	/**
 	 * Current limitations:
@@ -81,7 +90,23 @@ package com.hurlant.crypto.rsa
 			n = null;
 			Memory.gc();
 		}
+
 		public function encrypt(src:ByteArray, dst:ByteArray, length:uint, pad:Function=null):void {
+			_encrypt(doPublic, src, dst, length, pad, 0x02);
+		}
+		public function decrypt(src:ByteArray, dst:ByteArray, length:uint, pad:Function=null):void {
+			_decrypt(doPrivate2, src, dst, length, pad, 0x02);
+		}
+
+		public function sign(src:ByteArray, dst:ByteArray, length:uint, pad:Function = null):void {
+			_encrypt(doPrivate2, src, dst, length, pad, 0x01);
+		}
+		public function verify(src:ByteArray, dst:ByteArray, length:uint, pad:Function = null):void {
+			_decrypt(doPublic, src, dst, length, pad, 0x01);
+		}
+		
+
+		private function _encrypt(op:Function, src:ByteArray, dst:ByteArray, length:uint, pad:Function, padType:int):void {
 			// adjust pad if needed
 			if (pad==null) pad = pkcs1pad;
 			// convert src to BigInteger
@@ -91,12 +116,12 @@ package com.hurlant.crypto.rsa
 			var bl:uint = getBlockSize();
 			var end:int = src.position + length;
 			while (src.position<end) {
-				var block:BigInteger = new BigInteger(pad(src, end, bl), bl);
-				var chunk:BigInteger = doPublic(block);
+				var block:BigInteger = new BigInteger(pad(src, end, bl, padType), bl);
+				var chunk:BigInteger = op(block);
 				chunk.toArray(dst);
 			}
 		}
-		public function decrypt(src:ByteArray, dst:ByteArray, length:uint, pad:Function=null):void {
+		private function _decrypt(op:Function, src:ByteArray, dst:ByteArray, length:uint, pad:Function, padType:int):void {
 			// adjust pad if needed
 			if (pad==null) pad = pkcs1unpad;
 			
@@ -108,16 +133,17 @@ package com.hurlant.crypto.rsa
 			var end:int = src.position + length;
 			while (src.position<end) {
 				var block:BigInteger = new BigInteger(src, length);
-				var chunk:BigInteger = doPrivate2(block);
+				var chunk:BigInteger = op(block);
 				var b:ByteArray = pad(chunk, bl);
 				dst.writeBytes(b);
 			}
 		}
+		
 		/**
-		 * PKCS#1 pad. type 2, random.
+		 * PKCS#1 pad. type 1 (0xff) or 2, random.
 		 * puts as much data from src into it, leaves what doesn't fit alone.
 		 */
-		private function pkcs1pad(src:ByteArray, end:int, n:uint):ByteArray {
+		private function pkcs1pad(src:ByteArray, end:int, n:uint, type:uint = 0x02):ByteArray {
 			var out:ByteArray = new ByteArray;
 			var p:uint = src.position;
 			end = Math.min(end, src.length, p+n-11);
@@ -130,33 +156,42 @@ package com.hurlant.crypto.rsa
 			var rng:Random = new Random;
 			while (n>2) {
 				var x:int = 0;
-				while (x==0) x = rng.nextByte();
+				while (x==0) x = (type==0x02)?rng.nextByte():0xFF;
 				out[--n] = x;
 			}
-			out[--n] = 2;
+			out[--n] = type;
 			out[--n] = 0;
 			return out;
 		}
 		
-		private function pkcs1unpad(src:BigInteger, n:uint):ByteArray {
+		/**
+		 * 
+		 * @param src
+		 * @param n
+		 * @param type Not used.
+		 * @return 
+		 * 
+		 */
+		private function pkcs1unpad(src:BigInteger, n:uint, type:uint = 0x02):ByteArray {
 			var b:ByteArray = src.toByteArray();
 			var out:ByteArray = new ByteArray;
 			var i:int = 0;
 			while (i<b.length && b[i]==0) ++i;
-			if (b.length-i != n-1 || b[i]!=2) {
-				trace("PKCS#1 unpad: i="+i+", expected b[i]==2, got b[i]="+b[i]);
+			if (b.length-i != n-1 || b[i]>2) {
+				trace("PKCS#1 unpad: i="+i+", expected b[i]==[0,1,2], got b[i]="+b[i].toString(16));
 				return null;
 			}
 			++i;
 			while (b[i]!=0) {
 				if (++i>=b.length) {
-					trace("PKCS#1 unpad: i="+i+", b[i-1]!=0 (="+b[i-1]+")");
+					trace("PKCS#1 unpad: i="+i+", b[i-1]!=0 (="+b[i-1].toString(16)+")");
 					return null;
 				}
 			}
 			while (++i < b.length) {
 				out.writeByte(b[i]);
 			}
+			out.position = 0;
 			return out;
 		}
 		/**

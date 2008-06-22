@@ -17,6 +17,7 @@
    </compiler>
    <include-classes>
       <class>com.hurlant.crypto.Crypto</class>
+      <class>com.hurlant.crypto.tls.TLSSocket</class>
    </include-classes>
    <metadata>
       <creator>Henri Torgemane</creator>

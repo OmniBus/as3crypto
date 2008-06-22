@@ -8,7 +8,10 @@
 </libraryPath>
 <sourceAttachmentPath/>
 </compiler>
-<applications/>
+<applications>
+<application path="TLSUI.mxml"/>
+<application path="CryptoDemo.mxml"/>
+</applications>
 <modules/>
 <buildCSSFiles/>
 </actionScriptProperties>

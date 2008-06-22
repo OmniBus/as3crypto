@@ -20,6 +20,7 @@
 		<ns1:BenchmarkTab/>
 		<ns1:UnitTestTab/>
 		<ns1:MonkeyTab/>
+		<ns1:TLSDemo/>
 	</mx:TabNavigator>
 	<mx:LinkButton label="Crypto.hurlant.com" right="10" top="8" click="navigateToURL(new URLRequest('http://crypto.hurlant.com/'))"/>
 	

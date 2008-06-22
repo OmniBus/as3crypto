@@ -59,6 +59,8 @@ package com.hurlant.crypto.hash
 		
 		public function hash(src:ByteArray):ByteArray
 		{
+			var savedLength:uint = src.length;
+			
 			// 3.1 Step 1. Padding
 			var i:uint = (16-src.length%16) || 16;
 			do {
@@ -100,6 +102,8 @@ package com.hurlant.crypto.hash
 			}
 			// 3.5 Step 5. Output
 			X.length = 16;
+			// restore original length;
+			src.length = savedLength;
 			return X;
 		}
 		

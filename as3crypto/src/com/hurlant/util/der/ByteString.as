@@ -1,3 +1,11 @@
+/**
+ * ByteString
+ * 
+ * An ASN1 type for a ByteString, represented with a ByteArray
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
 package com.hurlant.util.der
 {
 	import flash.utils.ByteArray;
@@ -8,7 +16,7 @@ package com.hurlant.util.der
 		private var type:uint;
 		private var len:uint;
 		
-		public function ByteString(type:uint, length:uint) {
+		public function ByteString(type:uint = 0x04, length:uint = 0x00) {
 			this.type = type;
 			this.len = length;
 		}
@@ -21,6 +29,10 @@ package com.hurlant.util.der
 		public function getType():uint
 		{
 			return type;
+		}
+		
+		public function toDER():ByteArray {
+			return DER.wrapDER(type, this);
 		}
 		
 		override public function toString():String {

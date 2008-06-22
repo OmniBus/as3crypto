@@ -17,7 +17,7 @@ package com.hurlant.crypto.symmetric
 	 * This uses a padding and a symmetric key.
 	 * If no padding is given, PKCS#5 is used.
 	 */
-	public class ECBMode implements IMode
+	public class ECBMode implements IMode, ICipher
 	{
 		private var key:ISymmetricKey;
 		private var padding:IPad;
@@ -26,6 +26,8 @@ package com.hurlant.crypto.symmetric
 			this.key = key;
 			if (padding == null) {
 				padding = new PKCS5(key.getBlockSize());
+			} else {
+				padding.setBlockSize(key.getBlockSize());
 			}
 			this.padding = padding;
 		}

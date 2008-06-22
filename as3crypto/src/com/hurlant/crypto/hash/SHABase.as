@@ -9,6 +9,7 @@
 package com.hurlant.crypto.hash
 {
 	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 
 	public class SHABase implements IHash
 	{
@@ -25,6 +26,9 @@ package com.hurlant.crypto.hash
 		public function hash(src:ByteArray):ByteArray
 		{
 			var savedLength:uint = src.length;
+			var savedEndian:String = src.endian;
+			
+			src.endian = Endian.BIG_ENDIAN;
 			var len:uint = savedLength *8;
 			// pad to nearest int.
 			while (src.length%4!=0) {
@@ -44,6 +48,7 @@ package com.hurlant.crypto.hash
 			}
 			// unpad, to leave the source untouched.
 			src.length = savedLength;
+			src.endian = savedEndian;
 			return out;
 		}
 		protected function core(x:Array, len:uint):Array {

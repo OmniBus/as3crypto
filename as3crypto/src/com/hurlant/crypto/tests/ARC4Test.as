@@ -47,6 +47,7 @@ package com.hurlant.crypto.tests
 				var out:String = Hex.fromArray(pt).toUpperCase();
 				assert("comparing "+cts[i]+" to "+out, cts[i]==out);
 				// now go back to plaintext
+				rc4.init(key);
 				rc4.decrypt(pt);
 				out = Hex.fromArray(pt);
 				assert("comparing "+pts[i]+" to "+out, pts[i]==out);

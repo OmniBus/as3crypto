@@ -1,3 +1,11 @@
+/**
+ * RSAKeyTest
+ * 
+ * A test class for RSAKey
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
 package com.hurlant.crypto.tests
 {
 	import com.hurlant.crypto.rsa.RSAKey;

@@ -1,5 +1,15 @@
+/**
+ * PrintableString
+ * 
+ * An ASN1 type for a PrintableString, held within a String
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
 package com.hurlant.util.der
 {
+	import flash.utils.ByteArray;
+	
 	public class PrintableString implements IAsn1Type
 	{
 		protected var type:uint;
@@ -32,5 +42,8 @@ package com.hurlant.util.der
 			return DER.indent+str;
 		}
 		
+		public function toDER():ByteArray {
+			return null; // XXX not implemented
+		}
 	}
 }

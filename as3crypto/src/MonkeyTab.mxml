@@ -131,7 +131,6 @@ The whole thing is pretty slow. You've been warned.
 				var keyLength:uint = Crypto.getKeySize(cipherList[cipherIndex]);
 				key = new ByteArray;
 				rand.nextBytes(key, keyLength);
-				cipher = Crypto.getCipher(cipherList[cipherIndex], key);
 				callLater(nextTry);
 			}
 			private function nextTry():void {
@@ -140,6 +139,7 @@ The whole thing is pretty slow. You've been warned.
 					nextCipher();
 					return;
 				}
+				cipher = Crypto.getCipher(cipherList[cipherIndex], key);
 				tryCount++;
 				iv = new ByteArray;
 				rand.nextBytes(iv, cipher.getBlockSize());
@@ -179,6 +179,11 @@ The whole thing is pretty slow. You've been warned.
 				testCount++;
 				summarize();
 				// ok. decrypt.
+				cipher = Crypto.getCipher(cipherList[cipherIndex], key);
+				if (cipher is IVMode) {
+					var ivm:IVMode = cipher as IVMode;
+					ivm.IV = iv;
+				}
 				src.position=0;
 				src.writeBytes(text);
 				askOpenSSL({

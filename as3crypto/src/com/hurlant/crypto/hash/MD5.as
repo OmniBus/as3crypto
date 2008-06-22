@@ -10,11 +10,16 @@
  *		Version 2.1 Copyright (C) Paul Johnston 1999 - 2002.
  * 		Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
  * 
+ * Note:
+ * This algorithm should not be your first choice for new developements, but is
+ * included to allow interoperability with existing codes and protocols.
+ * 
  * See LICENSE.txt for full license information.
  */
 package com.hurlant.crypto.hash
 {
 	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 
  	public class MD5 implements IHash
 	{
@@ -33,6 +38,7 @@ package com.hurlant.crypto.hash
 		public function hash(src:ByteArray):ByteArray
 		{
 			var len:uint = src.length *8;
+			var savedEndian:String = src.endian;
 			// pad to nearest int.
 			while (src.length%4!=0) {
 				src[src.length]=0;
@@ -40,16 +46,20 @@ package com.hurlant.crypto.hash
 			// convert ByteArray to an array of uint
 			src.position=0;
 			var a:Array = [];
-			src.endian="littleEndian";
+			src.endian=Endian.LITTLE_ENDIAN
 			for (var i:uint=0;i<src.length;i+=4) {
 				a.push(src.readUnsignedInt());
 			}
 			var h:Array = core_md5(a, len);
 			var out:ByteArray = new ByteArray;
-			out.endian="littleEndian";
+			out.endian=Endian.LITTLE_ENDIAN;
 			for (i=0;i<4;i++) {
 				out.writeUnsignedInt(h[i]);
 			}
+			// restore length!
+			src.length = len/8;
+			src.endian = savedEndian;
+			
 			return out;
 		}
 		

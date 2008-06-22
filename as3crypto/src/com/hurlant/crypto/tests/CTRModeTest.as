@@ -1,3 +1,11 @@
+/**
+ * CTRModeTest
+ * 
+ * A test class for CTRMode
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
 package com.hurlant.crypto.tests
 {
 	import flash.utils.ByteArray;
