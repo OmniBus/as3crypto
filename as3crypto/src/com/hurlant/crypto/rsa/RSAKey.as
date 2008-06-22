@@ -58,17 +58,17 @@ package com.hurlant.crypto.rsa
 		}
 
 		public static function parsePublicKey(N:String, E:String):RSAKey {
-			return new RSAKey(new BigInteger(N, 16), parseInt(E,16));
+			return new RSAKey(new BigInteger(N, 16, true), parseInt(E,16));
 		}
 		public static function parsePrivateKey(N:String, E:String, D:String, 
 			P:String=null,Q:String=null, DMP1:String=null, DMQ1:String=null, IQMP:String=null):RSAKey {
 			if (P==null) {
-				return new RSAKey(new BigInteger(N,16), parseInt(E,16), new BigInteger(D,16));
+				return new RSAKey(new BigInteger(N,16, true), parseInt(E,16), new BigInteger(D,16, true));
 			} else {
-				return new RSAKey(new BigInteger(N,16), parseInt(E,16), new BigInteger(D,16),
-					new BigInteger(P,16), new BigInteger(Q,16),
-					new BigInteger(DMP1,16), new BigInteger(DMQ1),
-					new BigInteger(IQMP));				
+				return new RSAKey(new BigInteger(N,16, true), parseInt(E,16), new BigInteger(D,16, true),
+					new BigInteger(P,16, true), new BigInteger(Q,16, true),
+					new BigInteger(DMP1,16, true), new BigInteger(DMQ1, 16, true),
+					new BigInteger(IQMP, 16, true));
 			}
 		}
 		
@@ -107,7 +107,7 @@ package com.hurlant.crypto.rsa
 			var bl:uint = getBlockSize();
 			var end:int = src.position + length;
 			while (src.position<end) {
-				var block:BigInteger = new BigInteger(pad(src, end, bl, padType), bl);
+				var block:BigInteger = new BigInteger(pad(src, end, bl, padType), bl, true);
 				var chunk:BigInteger = op(block);
 				chunk.toArray(dst);
 			}
@@ -123,7 +123,7 @@ package com.hurlant.crypto.rsa
 			var bl:uint = getBlockSize();
 			var end:int = src.position + length;
 			while (src.position<end) {
-				var block:BigInteger = new BigInteger(src, length);
+				var block:BigInteger = new BigInteger(src, length, true);
 				var chunk:BigInteger = op(block);
 				var b:ByteArray = pad(chunk, bl);
 				dst.writeBytes(b);
@@ -237,7 +237,7 @@ package com.hurlant.crypto.rsa
 			var qs:uint = B>>1;
 			var key:RSAKey = new RSAKey(null,0,null);
 			key.e = parseInt(E, 16);
-			var ee:BigInteger = new BigInteger(E,16);
+			var ee:BigInteger = new BigInteger(E,16, true);
 			for (;;) {
 				for (;;) {
 					key.p = bigRandom(B-qs, rng);
@@ -274,7 +274,7 @@ package com.hurlant.crypto.rsa
 			var x:ByteArray = new ByteArray;
 			rnd.nextBytes(x, (bits>>3));
 			x.position = 0;
-			var b:BigInteger = new BigInteger(x);
+			var b:BigInteger = new BigInteger(x,0,true);
 			b.primify(bits, 1);
 			return b;
 		}
