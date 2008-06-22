@@ -10,7 +10,7 @@
  */
 -->
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:ns1="*"
-	viewSourceURL="srcview">
+	viewSourceURL="srcview/index.html">
 	<mx:Label text="AS3 Crypto Demo page" left="10" top="10"/>
 	<mx:TabNavigator left="10" top="36" bottom="10" right="10">
 		<ns1:PublicTab/>
@@ -21,6 +21,7 @@
 		<ns1:UnitTestTab/>
 		<ns1:MonkeyTab/>
 		<ns1:TLSDemo/>
+		<ns1:ASN1Tab/>
 	</mx:TabNavigator>
 	<mx:LinkButton label="Crypto.hurlant.com" right="10" top="8" click="navigateToURL(new URLRequest('http://crypto.hurlant.com/'))"/>
 	

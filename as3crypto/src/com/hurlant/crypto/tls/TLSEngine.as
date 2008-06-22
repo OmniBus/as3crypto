@@ -132,7 +132,6 @@ package com.hurlant.crypto.tls {
 			}
 		}
 		
-		
 		public function dataAvailable(e:* = null):void {
 			if (_state == STATE_CLOSED) return; // ignore
 			try {

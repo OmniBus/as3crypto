@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * ASN1Tab
+ * 
+ * Copyright (c) 2008 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	label="ASN-1" width="100%" height="100%"
+	creationComplete="init()">
+
+	<mx:Script>
+		<![CDATA[
+			import com.hurlant.util.asn1.type.ASN1Type;
+			import com.hurlant.util.der.PEM;
+			import com.hurlant.util.Hex;
+			import com.hurlant.util.der.Type2;
+		
+			[Embed(source="/certs/host.cert",mimeType="application/octet-stream")]
+			public var myCert:Class;
+
+			private function init():void {
+				var t:ASN1Type = Type2.Certificate;
+				var c:ByteArray = new myCert;
+				var cert:ByteArray = PEM.readCertIntoArray(c.readUTFBytes(c.length));
+				trace("cert:\n"+Hex.fromArray(cert));
+				var v:* = t.fromDER(cert,cert.length);
+				// okay. we can parse our test cert..
+				// now I need to switch the TLS codebase to use the new structure..
+			}
+		
+		]]>
+	</mx:Script>
+	
+</mx:Canvas>

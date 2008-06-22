@@ -23,13 +23,17 @@ package com.hurlant.crypto.cert {
 	import com.hurlant.util.der.PrintableString;
 	import com.hurlant.util.der.Sequence;
 	import com.hurlant.util.der.Type;
+	import com.hurlant.util.der.Type2;
 	
 	import flash.utils.ByteArray;
+	import flash.utils.getTimer;
 	
 	public class X509Certificate {
 		private var _loaded:Boolean;
 		private var _param:*;
-		private var _obj:Object;
+		private var _obj:Object; // old ASN-1 parsing
+		private var _obj2:Object; // new ASN-1 library
+		
 		public function X509Certificate(p:*) {
 			_loaded = false;
 			_param = p;
@@ -45,7 +49,13 @@ package com.hurlant.crypto.cert {
 				b = p;
 			}
 			if (b!=null) {
+				var t1:int = getTimer();
 				_obj = DER.parse(b, Type.TLS_CERT);
+				trace("Type 1 method: "+(getTimer()-t1)+"ms");
+				b.position = 0;
+				t1 = getTimer();
+				_obj2 = Type2.Certificate.fromDER(b, b.length);
+				trace("Type 2 method: "+(getTimer()-t1)+"ms");
 				_loaded = true;
 			} else {
 				throw new Error("Invalid x509 Certificate parameter: "+p);

@@ -16,15 +16,6 @@ package com.hurlant.crypto.rsa
 	import com.hurlant.util.Memory;
 	
 	import flash.utils.ByteArray;
-	import com.hurlant.crypto.hash.IHash;
-	import com.hurlant.util.Hex;
-	import com.hurlant.util.der.DER;
-	import com.hurlant.util.der.OID;
-	import com.hurlant.util.ArrayUtil;
-	import com.hurlant.util.der.Type;
-	import com.hurlant.util.der.Sequence;
-	import com.hurlant.util.der.ObjectIdentifier;
-	import com.hurlant.util.der.ByteString;
 	
 	/**
 	 * Current limitations:
@@ -153,11 +144,19 @@ package com.hurlant.crypto.rsa
 				out[--n] = src[i--];
 			}
 			out[--n] = 0;
-			var rng:Random = new Random;
-			while (n>2) {
+			if (type==0x02) { // type 2
+				var rng:Random = new Random;
 				var x:int = 0;
-				while (x==0) x = (type==0x02)?rng.nextByte():0xFF;
-				out[--n] = x;
+				while (n>2) {
+					do {
+						x = rng.nextByte();
+					} while (x==0);
+					out[--n] = x;
+				}
+			} else { // type 1
+				while (n>2) {
+					out[--n] = 0xFF;
+				}
 			}
 			out[--n] = type;
 			out[--n] = 0;
@@ -177,8 +176,8 @@ package com.hurlant.crypto.rsa
 			var out:ByteArray = new ByteArray;
 			var i:int = 0;
 			while (i<b.length && b[i]==0) ++i;
-			if (b.length-i != n-1 || b[i]>2) {
-				trace("PKCS#1 unpad: i="+i+", expected b[i]==[0,1,2], got b[i]="+b[i].toString(16));
+			if (b.length-i != n-1 || b[i]!=type) {
+				trace("PKCS#1 unpad: i="+i+", expected b[i]=="+type+", got b[i]="+b[i].toString(16));
 				return null;
 			}
 			++i;
