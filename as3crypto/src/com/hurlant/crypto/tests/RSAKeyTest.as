@@ -8,10 +8,12 @@
  */
 package com.hurlant.crypto.tests
 {
+	import com.hurlant.crypto.Crypto;
 	import com.hurlant.crypto.rsa.RSAKey;
-	import flash.utils.ByteArray;
 	import com.hurlant.util.Hex;
 	import com.hurlant.util.der.PEM;
+	
+	import flash.utils.ByteArray;
 	
 	public class RSAKeyTest extends TestCase
 	{
@@ -23,6 +25,8 @@ package com.hurlant.crypto.tests
 			runTest(testGenerate, "RSA Key Generation test");
 			runTest(testPEM, "RSA Private Key PEM parsing");
 			runTest(testPEM2, "RSA Public Key PEM parsing");
+			
+			runTest(testAdobeSample, "RSA sample code from Adobe article");
 			h.endTestCase();
 		}
 		
@@ -86,7 +90,33 @@ package com.hurlant.crypto.tests
 					"MCwwDQYJKoZIhvcNAQEBBQADGwAwGAIRAMkbduS4H0h7uM6V1BNV3M8CAwEAAQ==\n" + 
 					"-----END PUBLIC KEY-----";
 			var rsa:RSAKey = PEM.readRSAPublicKey(pem);
+			assert("rsa!=null", rsa!=null);
 			//trace(rsa.dump());
+		}
+		
+		public function testAdobeSample():void {
+	       var myPEMPublicKeyString:String = 
+	       		"-----BEGIN PUBLIC KEY-----" +
+	       		"MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALHpyYTN96rMbkQB" + 
+	       		"gIoB9vH2AN47NN1YXoKxAaqpEkafQdPUw41p4gTrA0r04acE" + 
+	       		"m3GaWUA4YROCSKgJnvii0UsCAwEAAQ==" + 
+	       		"-----END PUBLIC KEY-----";
+	
+	        // Put data to be encrypted into a byte array
+	        var data:ByteArray = Hex.toArray(Hex.fromString("MyInputString"));
+	
+	        // Destination ByteArray that will contain the encrypted data
+	        var encryptedResult:ByteArray = new ByteArray;
+	
+	        // Set up the RSAKey and encrypt the data
+	        var rsa:RSAKey = PEM.readRSAPublicKey(myPEMPublicKeyString);
+	        rsa.encrypt(data, encryptedResult, data.length);
+	
+	        // Convert the encrypted data into a hex encoded string for transport
+	        // The other side of the connection can convert the hex back into
+	        // binary before decrypting
+	        var hexEncryptedResult:String = Hex.fromArray(encryptedResult);
+	        assert("encrypted some stuff", hexEncryptedResult.length>5);
 		}
 	}
 }
