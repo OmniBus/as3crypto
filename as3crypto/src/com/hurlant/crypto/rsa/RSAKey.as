@@ -125,7 +125,7 @@ package com.hurlant.crypto.rsa
 			while (src.position<end) {
 				var block:BigInteger = new BigInteger(src, length, true);
 				var chunk:BigInteger = op(block);
-				var b:ByteArray = pad(chunk, bl);
+				var b:ByteArray = pad(chunk, bl, padType);
 				dst.writeBytes(b);
 			}
 		}

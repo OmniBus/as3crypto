@@ -95,8 +95,8 @@ package com.hurlant.crypto.tls {
 		public function testSocket():void {
 			var hosts:Array = [
 				"bugs.adobe.com",			// apache
-				"login.yahoo.com",  		// apache, bigger response
-				"login.live.com",			// IIS-6, chain of 3 certs
+//				"login.yahoo.com",  		// apache, bigger response
+//				"login.live.com",			// IIS-6, chain of 3 certs
 				"banking.wellsfargo.com",	// custom, sends its CA cert along for the ride.
 				"www.bankofamerica.com"		// sun-one, chain of 3 certs
 			];
@@ -109,13 +109,14 @@ package com.hurlant.crypto.tls {
 			if (host==null) return;
 			var t1:int = getTimer();
 			var host:String = host;
-			var t:TLSSocket = new TLSSocket;
+			var t:Socket = new TLSSocket;
 			t.connect(host, 443); 
 			t.writeUTFBytes("GET / HTTP/1.0\nHost: "+host+"\n\n");
 			t.addEventListener(Event.CLOSE, function(e:*):void {
 				var s:String = t.readUTFBytes(t.bytesAvailable);
 				trace("Response from "+host+": "+s.length+" characters");
 				trace("Time used = "+(getTimer()-t1)+"ms");
+				trace("First 1K of response = \n"+s.slice(0,1024));
 				next();
 			});
 		}

@@ -16,8 +16,10 @@
 	<![CDATA[
 		import com.hurlant.crypto.tls.TLSTest;
 		
+		private var test:TLSTest;
+		
 		private function init():void {
-			new TLSTest;
+			test = new TLSTest;
 		}
 		
 	]]>
