@@ -27,6 +27,7 @@ package com.hurlant.crypto.tests
 			runTest(testPEM2, "RSA Public Key PEM parsing");
 			
 			runTest(testAdobeSample, "RSA sample code from Adobe article");
+			runTest(testLongText, "RSA long text encryption/decryption");
 			h.endTestCase();
 		}
 		
@@ -117,6 +118,31 @@ package com.hurlant.crypto.tests
 	        // binary before decrypting
 	        var hexEncryptedResult:String = Hex.fromArray(encryptedResult);
 	        assert("encrypted some stuff", hexEncryptedResult.length>5);
+		}
+		
+		public function testLongText():void {
+			var pem:String = "-----BEGIN RSA PRIVATE KEY-----\n" + 
+					"MGQCAQACEQDJG3bkuB9Ie7jOldQTVdzPAgMBAAECEQCOGqcPhP8t8mX8cb4cQEaR\n" + 
+					"AgkA5WTYuAGmH0cCCQDgbrto0i7qOQIINYr5btGrtccCCQCYy4qX4JDEMQIJAJll\n" + 
+					"OnLVtCWk\n" + 
+					"-----END RSA PRIVATE KEY-----";
+			var rsa:RSAKey = PEM.readRSAPrivateKey(pem);
+				
+			var txt:String = "With each new release" + 
+					"of Flash Player, Adobe strives to introduce a stronger platform with" + 
+					"more robust security controls and tools for creating secure" + 
+					"applications. By leveraging those tools, compiling for recent" + 
+					"versions, performing data validation, and leveraging available SDKs," + 
+					"developers can produce more secure applications that run in Flash" + 
+					"Player.";
+			var src:ByteArray = Hex.toArray(Hex.fromString(txt));
+			var dst:ByteArray = new ByteArray;
+			var dst2:ByteArray = new ByteArray;
+			rsa.encrypt(src, dst, src.length);
+			rsa.decrypt(dst, dst2, dst.length);
+			var txt2:String = Hex.toString(Hex.fromArray(dst2));
+			assert("rsa long text encrypt+decrypt", txt==txt2);
+				 
 		}
 	}
 }

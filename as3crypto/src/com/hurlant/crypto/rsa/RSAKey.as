@@ -123,7 +123,7 @@ package com.hurlant.crypto.rsa
 			var bl:uint = getBlockSize();
 			var end:int = src.position + length;
 			while (src.position<end) {
-				var block:BigInteger = new BigInteger(src, length, true);
+				var block:BigInteger = new BigInteger(src, bl, true);
 				var chunk:BigInteger = op(block);
 				var b:ByteArray = pad(chunk, bl, padType);
 				dst.writeBytes(b);
@@ -196,8 +196,11 @@ package com.hurlant.crypto.rsa
 		/**
 		 * Raw pad.
 		 */
-		private function rawpad(src:ByteArray, end:int, n:uint):ByteArray {
+		public function rawpad(src:ByteArray, end:int, n:uint, type:uint = 0):ByteArray {
 			return src;
+		}
+		public function rawunpad(src:BigInteger, n:uint, type:uint = 0):ByteArray {
+			return src.toByteArray();
 		}
 		
 		public function toString():String {
