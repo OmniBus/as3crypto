@@ -1,0 +1,18 @@
+As3 Crypto Library
+
+- 1.1
+  - secret key: DES, 3DES, BlowFish
+  - mode: CTR, SimpleIV
+  - demo UI: Added unit tests
+  - added toString() to each algorithm
+  - added dispose() to each algorithm. dispose() attempts to clear keys and states from the memory, but it is not guaranteed to work.
+  - build-swc.xml file to allow command-line compilation of a .SWC library file.
+
+- Initial release (1.0)
+  - public key: RSA encrypt
+  - secret key: AES, XTEA, RC4
+  - hash: MD5, SHA-1, SHA-224, SHA-256
+  - HMAC
+  - modes: ECB, CBC, CFB, CFB8, OFB
+  - converters: Base64, Hex
+  - Demo UI with benchmarking  

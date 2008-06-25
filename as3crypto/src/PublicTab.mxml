@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * PublicTab
+ * 
+ * A UI Component that allows one to quickly test the RSA functionality
+ * made available in the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" label="Public Key" width="100%" height="100%">
+	<mx:Label text="RSA Key:" left="10" top="10"/>
+	<mx:Button label="4096 bits" left="74" top="8"   click="populate4096()"/>
+	<mx:Button label="2048 bits" left="160" top="8"  click="populate2048()"/>
+	<mx:Button label="1024 bits" left="246" top="8"  click="populate1024()"/>
+	<mx:Button label="512 bits" left="332" top="8"   click="populate512()"/>
+	<mx:Label text="Public Exponent (hex):" left="10" top="36"/>
+	<mx:TextInput id="exponent" left="151" top="34" fontFamily="Courier New" fontSize="12"/>
+	<mx:Label text="Modulus:" left="10" top="62"/>
+	<mx:ComboBox id="modFormat" labelField="@label" left="74" top="60" change="displayModulus()">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="Text" value="text"/>
+			<item label="Hex" value="hex"/>
+			<item label="Base64" value="b64"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:TextArea id="modulus" height="68" left="10" top="88" right="10" fontFamily="Courier New" fontSize="12"/>
+	<mx:Label text="Plain Text:" left="10" top="166"/>
+	<mx:ComboBox id="inputFormat" labelField="@label" left="84" top="164" change="displayInput()">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="Text" value="text"/>
+			<item label="Hex" value="hex"/>
+			<item label="Base64" value="b64"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:TextArea id="input" keyDown="currentInput=null" left="10" right="10" top="192" bottom="174" fontFamily="Courier New" fontSize="12"/>
+	<mx:Label text="Cipher Text:" left="10" bottom="146"/>
+	<mx:ComboBox id="outputFormat" labelField="@label" bottom="144" left="96" change="displayOutput()">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="Text" value="text"/>
+			<item label="Hex" value="hex"/>
+			<item label="Base64" value="b64"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:TextArea id="output" keyDown="currentResult=null" height="128" right="10" left="10" bottom="10" editable="false" fontFamily="Courier New" fontSize="12"/>
+	<mx:Button click="encrypt()" label="Encrypt" right="10" bottom="144"/>
+	<mx:Script>
+		<![CDATA[
+			import com.hurlant.crypto.rsa.RSAKey;
+			import com.hurlant.util.Base64;
+			import com.hurlant.util.Hex;
+			private var currentInput:ByteArray;
+			private var currentResult:ByteArray;
+			private var currentModulus:String;
+
+			private function populate4096():void {
+				var exp:String = "10001";
+				var mod:String = "CD3FDBBEF703F62847113467ED9A30CA6B1E424E0CE713C072B537C53DCFF0FB221F9700"+
+				"529F8A05D6621620B08340AB55A949993F40B1753517C2E2950707002E2B5B9966D00827D0455C36"+
+				"D7B084837F99D7F4D37E1D2051AD883FE8A7F6E12EA33023EB9E9F69A26853E64218AC8025243109"+
+				"C1644123C23E1AD839E703082B584425A3059AB062CF973BD53D8FDA87BF9A40CC40D7B1EF81B7BC"+
+				"65F0281054540C622689CB313F1DC6FDDDA38B9C2CBD56F5E43021FE63AB4C92EFE78F620B6DD8C4"+
+				"1EAB11B4E5A8C07F3CB81E17DC46133E97D3941CE3AE5EDB8B85D33184422945C540CCE9553867EF"+
+				"CB71CD1731C7E3E7EF90C66E2A5F4CD96AD32B85E0D48A35AB9CC3A5F0E7FF3A053FD5CE1950C828"+
+				"2B716CC3AD862817E80C5982DA0BE01C7C524A71FA34A3EFCD8290158D628DCA6E075E3EAFAB5F4A"+
+				"9B6CB01B89CCA4A47F7D7628EFD7B1C6800F0BAB7803228D286884E17094739A0403F00E50FB0B6D"+
+				"7DF7927855B7C3357EB8C6DFF30A8AB4655773B0430529555259092645214B5F8A8FFCEE1C5ABE02"+
+				"90CF49BE4CB26418615166818338FC32058E117D70C89AB8C3868D8C83AA2343546E121A0C095D42"+
+				"5B5D8B6FEE864561741D679BF976B6C4A05654CC737B6AB75DE925235E4D85ACD4FC0B57476BAB99"+
+				"A22018FB7314FE434A4409825EFDDABA4C0A5440D6CB04C3107159EAD792A0FC70F54D79";
+				exponent.text = exp;
+				currentModulus = mod;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+			}
+
+			private function populate2048():void {
+				var exp:String = "10001";
+				var mod:String = "962594DF2E23FAB3DD367C0C141E6F83877A9FD6082788CA5EBC5F3CF8A9CE7C194CF9D5"+
+					"C261577263F86DB380ABD08EC8353BA2F65ABBB712A88CB41ABC87637B5873B1AC59C813C1CD0F8C"+
+					"05A35B5BDEC0D27592AFEA13185E4C9DD7968415E3AB9CB5109FF470801E5BF6D8915B5AD970CCBB"+
+					"A501174B0C931724C3D7371726712AF61326B02846CB6ADC3A5BDBF0BB821664E30B4B1068F56202"+
+					"2F15825432AC9C59D4865B97409D9A0B3BFAE52A2668969132E8E5EA8A949BDEE93578FE4F2B7EE0"+
+					"C7543B1B5FEFDBA6A876253358A6E8188474B603D937C7F3F4BF12B093942089D10F97439AA412E8"+
+					"989CFDE6DAFD99EAF1921C593689F904EECFFCDF";
+				exponent.text = exp;
+				currentModulus = mod;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+			}
+			private function populate1024():void {
+				var exp:String = "10001";
+				var mod:String = "BDFF7DD4AA9F8027B0D4915AF0DB8EF28A86F8058EB149B8A6AB5D195173C81456CCD4A3"+
+					"123A6A3571137A79D2489F05C18D158EB08F24182D5FBAC96DF5E1EACDA80035F87615D953091358"+
+					"79E0DC47E6BC36BF3A14512EB76A18BE92FF81645E9061A0CE5FB87F86D6AA77E616853B7C3D6E3D"+
+					"801FD6537542D0310B4B65282568CA5CF75298CE062FD7DF18AC603DAD5738BB3D25A4DC0A7DD03D"+
+					"4AFBB03737DCE18E955CAE485FED3185D7850F1199BBE1C3E3F05E13B63AA5F3F376B50D486EA752"+
+					"BE6C75E5DE69BCEDEC682EFAACE9E5828E34D115DEE534A447EB70F49A438032A28EF8104C4F5FBB"+
+					"BB6D6E9EC1C603CC7468669D0159C12932D838E5";
+				exponent.text = exp;
+				currentModulus = mod;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+			}
+			private function populate512():void {
+				var exp:String = "10001";
+				var mod:String = "C2AF5D115DA1A25E557F61CC1B7E8251396BEA4ACE72D4028DA9C47313CD4D219D767306137CA455AAF8BD3D7AAB1AFA92AA9C5C314990DDA422D7A3F2D7FB3D";
+				exponent.text = exp;
+				currentModulus = mod;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+			}
+
+			private function getModulus():String {
+				if (currentModulus!=null) return currentModulus;
+				var format:String = String(modFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": return modulus.text;
+					case "b64": return Hex.fromArray(Base64.decodeToByteArray(modulus.text));
+					default:
+						return Hex.fromString(modulus.text);
+				}
+			}
+			private function getInput():ByteArray {
+				var format:String = String(inputFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": return Hex.toArray(input.text);
+					case "b64": return Base64.decodeToByteArray(input.text);
+					default:
+						return Hex.toArray(Hex.fromString(input.text));
+				}
+			}
+
+			private function encrypt():void {
+				var rsa:RSAKey = RSAKey.parseKey(exponent.text, getModulus());
+				var data:ByteArray = getInput();
+				var dst:ByteArray = new ByteArray;
+				rsa.encrypt(data, dst, data.length);
+				currentResult = dst;
+				displayOutput();
+			}
+
+			private function displayModulus():void {
+				if (currentModulus==null) return;
+				var txt:String;
+				var format:String = String(modFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": txt = currentModulus; break;
+					case "b64": txt = Base64.encodeByteArray(Hex.toArray(currentModulus)); break;
+					default:
+						txt = Hex.toString(currentModulus);
+				}
+				modulus.text = txt;
+				
+			}
+ 			private function displayInput():void {
+				if (currentInput==null) return;
+				var txt:String;
+				var format:String = String(inputFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": txt = Hex.fromArray(currentInput); break;
+					case "b64": txt = Base64.encodeByteArray(currentInput); break;
+					default:
+						txt = Hex.toString(Hex.fromArray(currentInput)); break;
+				}
+				input.text = txt;
+ 			}
+			private function displayOutput():void {
+				if (currentResult==null) return;
+				var txt:String;
+				var format:String = String(outputFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": txt = Hex.fromArray(currentResult); break;
+					case "b64": txt = linebrk(Base64.encodeByteArray(currentResult),60); break;
+					default:
+						txt = Hex.toString(Hex.fromArray(currentResult)); break;
+				}
+				output.text = txt;
+			}
+			
+	 		private function linebrk(s:String,n:uint):String {
+			  var ret:String = "";
+			  var i:int = 0;
+			  while(i + n < s.length) {
+			    ret += s.substring(i,i+n) + "\n";
+			    i += n;
+			  }
+			  return ret + s.substring(i,s.length);
+			}
+			
+		]]>
+	</mx:Script>
+</mx:Canvas>
