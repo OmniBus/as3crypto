@@ -24,6 +24,7 @@ package com.hurlant.crypto.hash
  	public class MD5 implements IHash
 	{
 		public static const HASH_SIZE:int = 16;
+		public var pad_size:int = 48;
 		
 		public function getInputSize():uint
 		{
@@ -33,6 +34,11 @@ package com.hurlant.crypto.hash
 		public function getHashSize():uint
 		{
 			return HASH_SIZE;
+		}
+		
+		public function getPadSize():int 
+		{
+			return pad_size;
 		}
 		
 		public function hash(src:ByteArray):ByteArray

@@ -14,7 +14,7 @@ package com.hurlant.util.asn1.type {
 		}
 		
 		protected override function fromDERContent(s:ByteArray, length:int):* {
-			// XXX insufficient
+			// XXX insufficient 
 			var str:String = s.readMultiByte(length, "US-ASCII");
 			return str;
 		}

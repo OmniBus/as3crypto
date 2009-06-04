@@ -13,6 +13,7 @@
  */
 package com.hurlant.crypto.tls {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
@@ -24,17 +25,19 @@ package com.hurlant.crypto.tls {
 	import flash.utils.IDataOutput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	import com.hurlant.crypto.cert.X509Certificate;
+	
 	
 	[Event(name="close", type="flash.events.Event")]
 	[Event(name="connect", type="flash.events.Event")]
 	[Event(name="ioError", type="flash.events.IOErrorEvent")]
 	[Event(name="securityError", type="flash.events.SecurityErrorEvent")]
 	[Event(name="socketData", type="flash.events.ProgressEvent")]
+	[Event(name="acceptPeerCertificatePrompt", type="flash.events.Event")]
 	
 	/**
-	 * When used as a drop-in replacement for Socket, will automatically use TLS 1.0
-     * Otherwise, can be used with .startTLS to convert an already connected Socket
-	 * to TLS.
+	 * It feels like a socket, but it wraps the stream
+	 * over TLS 1.0
 	 * 
 	 * That's all.
 	 * 
@@ -49,13 +52,13 @@ package com.hurlant.crypto.tls {
 		private var _iStream_cursor:uint;
 		
 		private var _socket:Socket;
-		
-		private var _engine:TLSEngine;
 		private var _config:TLSConfig;
+		private var _engine:TLSEngine;
+		public static const ACCEPT_PEER_CERT_PROMPT:String = "acceptPeerCertificatePrompt"
 		
 		public function TLSSocket(host:String = null, port:int = 0, config:TLSConfig = null) {
+			_config = config;
 			if (host!=null && port!=0) {
-				setTLSConfig(config);
 				connect(host, port);
 			}
 		}
@@ -105,6 +108,7 @@ package com.hurlant.crypto.tls {
 		
 		private function onTLSClose(event:Event):void {
 			dispatchEvent(event);
+			// trace("Received TLS close");
 			close();
 		}
 		
@@ -127,17 +131,65 @@ package com.hurlant.crypto.tls {
 		override public function close():void {
 			_ready = false;
 			_engine.close();
-			_socket.flush();
-			_socket.close();
+			if (_socket.connected) {
+				_socket.flush();
+				_socket.close();
+			}
 		}
-		
-		public function setTLSConfig(config:TLSConfig):void {
+		public function setTLSConfig( config:TLSConfig) : void {
 			_config = config;
-		}
-		
+		}		
+
 		override public function connect(host:String, port:int):void {
 			init(new Socket, _config, host);
 			_socket.connect(host, port);
+			_engine.start();
+		}
+		
+		public function releaseSocket() : void {
+			_socket.removeEventListener(Event.CONNECT, dispatchEvent);
+			_socket.removeEventListener(IOErrorEvent.IO_ERROR, dispatchEvent);
+			_socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, dispatchEvent);
+			_socket.removeEventListener(Event.CLOSE, dispatchEvent);
+			_socket.removeEventListener(ProgressEvent.SOCKET_DATA, _engine.dataAvailable);
+			_socket = null; 
+		}
+		
+		public function reinitialize(host:String, config:TLSConfig) : void {
+			// Reinitialize the connection using new values
+			// but re-use the existing socket
+			// Doubt this is useful in any valid context other than my specific case (VMWare)
+			var ba:ByteArray = new ByteArray;
+			
+			if (_socket.bytesAvailable > 0) {
+				_socket.readBytes(ba, 0, _socket.bytesAvailable);	
+			}
+			// Do nothing with it.
+			_iStream = new ByteArray;
+			_oStream = new ByteArray;
+			_iStream_cursor = 0;
+			objectEncoding = ObjectEncoding.DEFAULT;
+			endian = Endian.BIG_ENDIAN;
+			/* 
+			_socket.addEventListener(Event.CONNECT, dispatchEvent);
+			_socket.addEventListener(IOErrorEvent.IO_ERROR, dispatchEvent);
+			_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, dispatchEvent);
+			_socket.addEventListener(Event.CLOSE, dispatchEvent);
+			*/
+			
+			if (config == null) {
+				config = new TLSConfig(TLSEngine.CLIENT);
+			}
+			
+			_engine = new TLSEngine(config, _socket, _socket, host);
+			_engine.addEventListener(TLSEvent.DATA, onTLSData);
+			_engine.addEventListener(TLSEvent.READY, onTLSReady);
+			_engine.addEventListener(Event.CLOSE, onTLSClose);
+			_engine.addEventListener(ProgressEvent.SOCKET_DATA, function(e:*):void { _socket.flush(); });
+			_socket.addEventListener(ProgressEvent.SOCKET_DATA, _engine.dataAvailable);
+			_engine.addEventListener( TLSEvent.PROMPT_ACCEPT_CERT, onAcceptCert );
+
+			_ready = false;
 			_engine.start();
 		}
 		
@@ -166,9 +218,10 @@ package com.hurlant.crypto.tls {
 			}
 			_engine = new TLSEngine(config, _socket, _socket, host);
 			_engine.addEventListener(TLSEvent.DATA, onTLSData);
+			_engine.addEventListener( TLSEvent.PROMPT_ACCEPT_CERT, onAcceptCert );
 			_engine.addEventListener(TLSEvent.READY, onTLSReady);
 			_engine.addEventListener(Event.CLOSE, onTLSClose);
-			_engine.addEventListener(ProgressEvent.SOCKET_DATA, function(e:*):void { _socket.flush(); });
+			_engine.addEventListener(ProgressEvent.SOCKET_DATA, function(e:*):void { if(connected) _socket.flush(); });
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, _engine.dataAvailable);
 
 			_ready = false;
@@ -293,6 +346,23 @@ package com.hurlant.crypto.tls {
 		override public function writeUTFBytes(value:String):void {
 			_oStream.writeUTFBytes(value);
 			scheduleWrite();
+		}
+		
+		public function getPeerCertificate() : X509Certificate {
+			return _engine.peerCertificate;
+		}
+		
+		public function onAcceptCert( event:TLSEvent ) : void {
+			dispatchEvent( new TLSSocketEvent( _engine.peerCertificate ) );
+		}
+		
+		// These are just a passthroughs to the engine. Encapsulation, et al
+		public function acceptPeerCertificate( event:Event ) : void {
+			_engine.acceptPeerCertificate();
+		}
+	
+		public function rejectPeerCertificate( event:Event ) : void {
+			_engine.rejectPeerCertificate();
 		}
 		
 	}

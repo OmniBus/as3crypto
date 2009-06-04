@@ -13,6 +13,7 @@ package com.hurlant.crypto.hash
 
 	public class SHABase implements IHash
 	{
+		public var pad_size:int = 40;
 		public function getInputSize():uint
 		{
 			return 64;
@@ -21,6 +22,11 @@ package com.hurlant.crypto.hash
 		public function getHashSize():uint
 		{
 			return 0;
+		}
+		
+		public function getPadSize():int 
+		{
+			return pad_size;
 		}
 		
 		public function hash(src:ByteArray):ByteArray

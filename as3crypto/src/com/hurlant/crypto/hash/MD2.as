@@ -28,6 +28,7 @@ package com.hurlant.crypto.hash
 	public class MD2 implements IHash
 	{
 		public static const HASH_SIZE:int = 16;
+		public var pad_size:int = 48; // probably will never get used, only here for SSL 3.0 support
 		
 		private static const S:Array = [ // PI Digits
  41,  46,  67, 201, 162, 216, 124,   1,  61,  54,  84, 161, 236, 240,   6,  19,
@@ -50,6 +51,10 @@ package com.hurlant.crypto.hash
 		public function getInputSize():uint
 		{
 			return 16;
+		}
+		
+		public function getPadSize():int {
+			return pad_size;
 		}
 		
 		public function getHashSize():uint

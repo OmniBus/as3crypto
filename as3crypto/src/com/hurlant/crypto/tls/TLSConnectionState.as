@@ -18,7 +18,8 @@ package com.hurlant.crypto.tls {
 	import com.hurlant.util.Hex;
 	import com.hurlant.util.ArrayUtil;
 	
-	public class TLSConnectionState {
+	public class TLSConnectionState implements IConnectionState {
+
 
 		// compression state
 		
@@ -40,6 +41,7 @@ package com.hurlant.crypto.tls {
 		private var seq_hi:uint;
 		
 
+
 		public function TLSConnectionState(
 				bulkCipher:uint=0, cipherType:uint=0, macAlgorithm:uint=0,
 				mac:ByteArray=null, key:ByteArray=null, IV:ByteArray=null) {
@@ -50,7 +52,7 @@ package com.hurlant.crypto.tls {
 			hmac = MACs.getHMAC(macAlgorithm);
 			CIPHER_key = key;
 			CIPHER_IV = IV;
-			cipher = BulkCiphers.getCipher(bulkCipher, key);
+			cipher = BulkCiphers.getCipher(bulkCipher, key, 0x0301);
 			if (cipher is IVMode) {
 				ivmode = cipher as IVMode;
 				ivmode.IV = IV;
@@ -73,6 +75,7 @@ package com.hurlant.crypto.tls {
 				
 				cipher.decrypt(p);
 
+
 				CIPHER_IV = nextIV;
 				ivmode.IV = nextIV;
 			}
@@ -82,7 +85,7 @@ package com.hurlant.crypto.tls {
 				data.writeUnsignedInt(seq_hi);
 				data.writeUnsignedInt(seq_lo);
 				data.writeByte(type);
-				data.writeShort(TLSEngine.TLS_VERSION);
+				data.writeShort(TLSSecurityParameters.PROTOCOL_VERSION);
 				data.writeShort(len);
 				if (len!=0) {
 					data.writeBytes(p, 0, len);
@@ -111,7 +114,7 @@ package com.hurlant.crypto.tls {
 				data.writeUnsignedInt(seq_hi);
 				data.writeUnsignedInt(seq_lo);
 				data.writeByte(type);
-				data.writeShort(TLSEngine.TLS_VERSION);
+				data.writeShort(TLSSecurityParameters.PROTOCOL_VERSION);
 				data.writeShort(p.length);
 				if (p.length!=0) {
 					data.writeBytes(p, 0, p.length);

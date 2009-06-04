@@ -49,6 +49,7 @@ package com.hurlant.util.der
 		public static const ub_terminal_id_length:int = 24;
 		public static const ub_unformatted_address_length:int = 180;
 		public static const ub_x121_address_length:int = 16;
+		public static const ub_pkcs9_string:int = 255; // see ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-9-v2/pkcs-9.pdf, ASN.1 module, pkcs-9-ub-pkcs9String
 		
 		// Note - upper bounds on TeletexString are measured in characters.
 		// A significantly greater number of octets will be required to hold
@@ -87,6 +88,8 @@ package com.hurlant.util.der
 		
 		public static const pkcs_9:OIDType = oid( iso, member_body, us, rsadsi, pkcs, 9);
 		public static const emailAddress:OIDType = oid(pkcs_9, 1);
+		// oh look, an Unstructured Name ... Joy..YAY for VMWare. BP
+		public static const pkcs9_unstructuredName:OIDType = oid(pkcs_9, 2); 
 		
 		// object identifiers for Name type and directory attribute support
 
@@ -119,6 +122,7 @@ package com.hurlant.util.der
 		public static const ansi_x942:String = "10046";
 		public static const number_type:String = "2";
 		public static const pkcs_1:OIDType = oid( iso, member_body, us, rsadsi, pkcs, 1 );
+		
 		public static const rsaEncryption:OIDType = oid(pkcs_1, 1);
 		public static const md2WithRSAEncryption:OIDType = oid(pkcs_1, 2);
 		public static const md5WithRSAEncryption:OIDType = oid(pkcs_1, 4);
@@ -178,6 +182,15 @@ package com.hurlant.util.der
 				{ utf8String: utf8String(1,maxSize) }
 			);
 		};
+		
+		// PKCS9 string value, handled for VMWare cases (and anyone with pkcs unstructured strings
+		public static const pkcs9string:Function = function( maxSize:int):ASN1Type {
+			return choice( 
+				{ utf8String : utf8String(1, maxSize) },
+				{ directoryString : directoryString(maxSize) }
+			);
+		};
+		
 		public static const AttributeTypeAndValue:ASN1Type = choice(
 			{ name: sequence(
 				{ type: id_at_name },
@@ -235,7 +248,12 @@ package com.hurlant.util.der
 			{ pkcs9email: sequence(
 				{ type: emailAddress },
 				{ value: ia5String(ub_emailaddress_length) }
+			)},
+			{ pkcs9UnstructuredName: sequence(
+				{ type : pkcs9_unstructuredName },
+				{ value: pkcs9string(ub_pkcs9_string) }
 			)}
+			
 		);
 		public static const RelativeDistinguishedName:ASN1Type = setOf(AttributeTypeAndValue, 1, MAX);
 		public static const RDNSequence:ASN1Type = sequenceOf( RelativeDistinguishedName );

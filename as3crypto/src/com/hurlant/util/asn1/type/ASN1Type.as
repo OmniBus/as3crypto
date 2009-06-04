@@ -44,6 +44,7 @@ package com.hurlant.util.asn1.type {
 		public static const GENERAL_STRING:int = 27;
 		public static const UNIVERSAL_STRING:int = 28;
 		public static const BMP_STRING:int = 30;
+		public static const UNSTRUCTURED_NAME:int = 31; // ??? no clue.
 		
 		// Classes of tags
 		public static const UNIVERSAL:int   = 0;
@@ -108,7 +109,7 @@ package com.hurlant.util.asn1.type {
 					// unwrap the explicit tag..
 					var tag:int = readDERTag(s, explicitClass, true); // explicit tags are always constructed
 					if (tag!=explicitTag) {
-						break aleg;
+						break aleg; // haha! The wit.
 					}
 					length = readDERLength(s);
 					// XXX I should use length to validate stuff.
@@ -165,7 +166,7 @@ package com.hurlant.util.asn1.type {
 				} while (o&0x80!=0);
 			}
 			if (classValue!=cv) {
-				trace("Tag Class Mismatch. expected "+classValue+", found "+cv);
+				// trace("Tag Class Mismatch. expected "+classValue+", found "+cv);
 				//return -1; // tag class mismatch // XXX ignore that for now.. :(
 			}
 			return type;
@@ -173,6 +174,7 @@ package com.hurlant.util.asn1.type {
 			//if (any || (c==constructed)) return type;
 			//return -1; // constructed flag mismatch.
 		}
+		
 		protected function readDERLength(s:ByteArray):int {
 			// length
 			var len:int = s.readUnsignedByte();

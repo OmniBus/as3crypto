@@ -2,17 +2,18 @@
  To build as3crypto.swc, use
 
    compc -load-config=build-swc.xml
-
- That is all.
+ 
+ If you need Flash Player 9 support, change the path below to something more 
+ appropriate for your SDK and/or Player version
 -->
 <flex-config>
    <benchmark>true</benchmark>
    <compiler>
       <external-library-path>
-         <path-element>${flexlib}/libs/playerglobal.swc</path-element>
+         <path-element>${flexlib}/libs/player/10/playerglobal.swc</path-element>     
       </external-library-path>
       <source-path>
-         <path-element>.</path-element>
+         <path-element>./src</path-element>
       </source-path>
    </compiler>
    <include-classes>

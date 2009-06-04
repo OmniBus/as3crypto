@@ -10,18 +10,17 @@
 package com.hurlant.crypto.tls {
 	import flash.events.Event;
 	import flash.utils.ByteArray;
+	import com.hurlant.crypto.cert.X509Certificate;
 	
-	public class TLSEvent extends Event {
+	public class TLSSocketEvent extends Event {
 		
-		static public const DATA:String = "data";
-		static public const READY:String = "ready";
 		static public const PROMPT_ACCEPT_CERT:String = "promptAcceptCert";
 		
-		public var data:ByteArray;
+		public var cert:X509Certificate;
 		
-		public function TLSEvent(type:String, data:ByteArray = null) {
-			this.data = data;
-			super(type, false, false);
+		public function TLSSocketEvent( cert:X509Certificate = null) { 
+			super(PROMPT_ACCEPT_CERT, false, false);
+			this.cert = cert;
 		}
 	}
 }
